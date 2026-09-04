@@ -1,35 +1,19 @@
-import { useEffect, useState } from "react";
-import { getProducts } from "./api/products";
-import ProductCard from "./components/ProductCard";
-
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Stores from "./pages/Stores";
+import ProductDetails from "./pages/ProductDetails";
 function App() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    getProducts()
-      .then((data) => {
-        setProducts(data);
-      })
-      .catch((error) => {
-        setError(error.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
   return (
-    <>
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {loading && <p>Loading products...</p>}
-      {error && <p>Error: {error}</p>}
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-      </div>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/stores" element={<Stores />} />
+        <Route path="/products/:id" element={<ProductDetails />} />
+
+        <Route
+          path="*"
+          element={<Navigate to="/stores" replace />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
