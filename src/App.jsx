@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { getProducts } from "./api/products";
+import ProductCard from "./components/ProductCard";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -6,14 +8,7 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost/wordpress/index.php/wp-json/wc/store/v1/products")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        return response.json();
-      })
+    getProducts()
       .then((data) => {
         setProducts(data);
       })
@@ -26,22 +21,15 @@ function App() {
   }, []);
 
   return (
-    <div>
-      <h1>Urban Supply</h1>
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <p>Error: {error}</p>
-      ) : (
-        products.map((product) => (
-          <div key={product.id}>
-            <h2>{product.name}</h2>
-            <p>{product.prices.price}</p>
-          </div>
-        ))
-      )}
-    </div>
+    <>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {loading && <p>Loading products...</p>}
+      {error && <p>Error: {error}</p>}
+      {products.map((product) => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+      </div>
+    </>
   );
 }
 
