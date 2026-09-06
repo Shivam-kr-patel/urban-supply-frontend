@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProduct } from "../api/products";
-
+import { useCart } from "../context/CartContext";
 function ProductDetails() {
   // Get the product ID from the URL.
-  //
-  // Example:
-  // /products/13
-  //
-  // id will be "13"
+
   const { id } = useParams();
 
   // Store the product returned from WooCommerce.
@@ -23,11 +19,9 @@ function ProductDetails() {
   // Quantity selected by the customer.
   const [quantity, setQuantity] = useState(1);
 
+  const { addToCart } = useCart();
   // Fetch the product whenever the URL ID changes.
-  //
-  // Example:
-  // /products/13 → getProduct("13")
-  // /products/15 → getProduct("15")
+  
   useEffect(() => {
     getProduct(id)
       .then((data) => {
@@ -228,6 +222,7 @@ function ProductDetails() {
                 {/* Add to Cart */}
 
                 <button
+                  onClick={() => addToCart({ ...product, quantity })}
                   type="button"
                   className="flex-1 rounded-lg bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800 active:scale-[0.98]"
                 >

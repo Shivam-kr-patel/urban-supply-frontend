@@ -7,6 +7,7 @@ import {
 
 import Stores from "./pages/Stores";
 import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           path="*"
           element={<Navigate to="/stores" replace />}
         />
+        <Route path="/cart" element={<Cart />} />
       </Routes>
     </BrowserRouter>
   );

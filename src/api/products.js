@@ -1,5 +1,5 @@
 const API_URL =
-  "http://localhost/wordpress/index.php/wp-json/wc/store/v1/products";
+  "http://localhost/urban-supply/index.php/wp-json/wc/store/v1/products";
 
 export async function getProducts() {
   const response = await fetch(API_URL);
