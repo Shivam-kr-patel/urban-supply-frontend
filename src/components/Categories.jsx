@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { decodeHtml } from "../utils/decodeHtml";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -84,7 +85,7 @@ export default function Categories() {
 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 pt-12">
                   <h3 className="text-lg font-semibold text-white">
-                    {category.name}
+                    {decodeHtml(category.name)}
                   </h3>
 
                   <p className="mt-1 text-sm text-white/80">

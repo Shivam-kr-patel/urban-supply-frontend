@@ -25,7 +25,7 @@ function Cart() {
             </p>
 
             <Link
-              to="/stores"
+              to="/shop"
               className="mt-6 inline-block rounded-lg bg-black px-6 py-3 font-semibold text-white hover:bg-gray-800"
             >
               Continue Shopping

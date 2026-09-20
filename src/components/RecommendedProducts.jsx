@@ -11,7 +11,7 @@ export default function RecommendedProducts() {
     const fetchProducts = async () => {
       try {
         const response = await fetch(
-          `${API_URL}/wc/store/v1/products?per_page=5`
+          `${API_URL}/wc/store/v1/products?per_page=20`
         );
 
         if (!response.ok) {
@@ -19,7 +19,7 @@ export default function RecommendedProducts() {
         }
 
         const data = await response.json();
-        setProducts(data);
+        setProducts(data.slice(0, 5)); // Get the first 5 products
       } catch (error) {
         console.error("Recommended products error:", error);
       } finally {
