@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 
-const CartContext = createContext();
+export const CartContext = createContext(null);
 
 const CART_STORAGE_KEY = "urban-supply-cart";
 

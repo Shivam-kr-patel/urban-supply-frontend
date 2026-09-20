@@ -1,136 +1,102 @@
-import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 function Account() {
-  const { user, loading, isLoggedIn, logout } = useAuth();
+  const navigate = useNavigate();
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="text-gray-600">
-            Loading account...
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Sign In Required
-          </h1>
-
-          <p className="mt-3 text-gray-600">
-            Please sign in to view your account.
-          </p>
-
-          <Link
-            to="/login"
-            className="mt-6 inline-block rounded-lg bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800"
-          >
-            Sign In
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
-  const fullName =
-    user.name ||
-    `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-    user.username;
-
-  const role =
-    user.roles?.length > 0
-      ? user.roles[0]
-      : "customer";
-
-  const formattedRole =
-    role.charAt(0).toUpperCase() +
-    role.slice(1).replace(/-/g, " ");
+  const {
+    user,
+    logout,
+  } = useAuth();
 
   const handleLogout = async () => {
-    await logout();
+    try {
+      await logout();
+      navigate("/login", {
+        replace: true,
+      });
+    } catch (error) {
+      console.error(
+        "Logout failed:",
+        error
+      );
+    }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-200 p-8">
-            <h1 className="text-3xl font-bold text-gray-900">
-              My Account
-            </h1>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                My Account
+              </h1>
 
-            <p className="mt-2 text-gray-600">
-              Manage your Urban Supply account.
-            </p>
+              <p className="mt-2 text-gray-600">
+                Welcome, {user?.first_name || user?.username}.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-red-200 px-5 py-2.5 font-semibold text-red-600 hover:bg-red-50"
+            >
+              Logout
+            </button>
           </div>
 
-          <div className="p-8">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-              <img
-                src={user.avatar}
-                alt={fullName}
-                className="h-24 w-24 rounded-full border border-gray-200 object-cover"
-              />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border border-gray-200 p-5">
+              <h2 className="font-semibold">
+                Profile
+              </h2>
 
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {fullName}
-                </h2>
-
-                <p className="mt-1 text-gray-600">
-                  {user.email}
+              <div className="mt-4 space-y-2 text-sm text-gray-600">
+                <p>
+                  Name:{" "}
+                  <span className="text-gray-900">
+                    {user?.name}
+                  </span>
                 </p>
 
-                <p className="mt-2 text-sm font-medium text-gray-500">
-                  Account type: {formattedRole}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border border-gray-200 p-5">
-                <p className="text-sm text-gray-500">
-                  Username
+                <p>
+                  Username:{" "}
+                  <span className="text-gray-900">
+                    {user?.username}
+                  </span>
                 </p>
 
-                <p className="mt-1 font-semibold text-gray-900">
-                  {user.username}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-gray-200 p-5">
-                <p className="text-sm text-gray-500">
-                  Email
-                </p>
-
-                <p className="mt-1 font-semibold text-gray-900">
-                  {user.email}
+                <p>
+                  Email:{" "}
+                  <span className="text-gray-900">
+                    {user?.email}
+                  </span>
                 </p>
               </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                to="/stores"
-                className="rounded-lg bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800"
-              >
-                Continue Shopping
-              </Link>
+            <div className="rounded-xl border border-gray-200 p-5">
+              <h2 className="font-semibold">
+                Shopping
+              </h2>
 
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-lg border border-gray-300 px-6 py-3 font-semibold text-gray-900 transition hover:bg-gray-100"
-              >
-                Logout
-              </button>
+              <div className="mt-4 space-y-3">
+                <Link
+                  to="/stores"
+                  className="block text-sm font-medium hover:underline"
+                >
+                  Continue Shopping
+                </Link>
+
+                <Link
+                  to="/cart"
+                  className="block text-sm font-medium hover:underline"
+                >
+                  View Cart
+                </Link>
+              </div>
             </div>
           </div>
         </div>

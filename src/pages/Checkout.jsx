@@ -1,332 +1,278 @@
-import { Link } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../hooks/useCart";
+import { useAuth } from "../hooks/useAuth";
 
 function Checkout() {
-  const { cartItems, cartTotal } = useCart();
+  const navigate = useNavigate();
+
+  const { user } = useAuth();
+
+  const {
+    cartItems,
+    cartTotal,
+    clearCart,
+  } = useCart();
+
+  const [form, setForm] = useState({
+    firstName: user?.first_name || "",
+    lastName: user?.last_name || "",
+    email: user?.email || "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    postcode: "",
+    country: "IN",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost/urban-supply/wp-json/urban-supply/v1/orders",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            billing: {
+              first_name: form.firstName,
+              last_name: form.lastName,
+              email: form.email,
+              phone: form.phone,
+              address_1: form.address,
+              city: form.city,
+              state: form.state,
+              postcode: form.postcode,
+              country: form.country,
+            },
+            shipping: {
+              first_name: form.firstName,
+              last_name: form.lastName,
+              address_1: form.address,
+              city: form.city,
+              state: form.state,
+              postcode: form.postcode,
+              country: form.country,
+            },
+            items: cartItems.map((item) => ({
+              product_id: item.id,
+              quantity: item.quantity,
+            })),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Unable to create your order."
+        );
+      }
+
+      clearCart();
+
+      navigate(`/order-success/${data.id}`, {
+        replace: true,
+      });
+    } catch (error) {
+      setError(
+        error.message ||
+          "Unable to place your order."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (cartItems.length === 0) {
     return (
-      <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Checkout
+      <main className="min-h-screen bg-gray-50 px-4 py-12">
+        <div className="mx-auto max-w-xl rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <h1 className="text-2xl font-bold">
+            Your cart is empty
           </h1>
 
-          <p className="mt-4 text-gray-600">
-            Your cart is empty.
+          <p className="mt-2 text-gray-600">
+            Add products before checking out.
           </p>
 
           <Link
             to="/stores"
-            className="mt-6 inline-block rounded-lg bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800"
+            className="mt-6 inline-block rounded-lg bg-black px-6 py-3 font-semibold text-white"
           >
-            Continue Shopping
+            Shop Now
           </Link>
         </div>
       </main>
     );
   }
 
-  const currencySymbol =
-    cartItems[0]?.prices?.currency_symbol || "₹";
-
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Checkout
-          </h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Checkout
+        </h1>
 
-          <p className="mt-2 text-gray-600">
-            Enter your details to complete your order.
-          </p>
-        </div>
+        {error && (
+          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Checkout Form */}
-          <section className="lg:col-span-2">
-            <form className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-xl font-bold text-gray-900">
-                Billing Details
-              </h2>
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
+          <form
+            onSubmit={handleSubmit}
+            className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+          >
+            <h2 className="text-xl font-bold">
+              Billing Information
+            </h2>
 
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="firstName"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    First Name
-                  </label>
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              <input
+                name="firstName"
+                required
+                value={form.firstName}
+                onChange={handleChange}
+                placeholder="First name"
+                className="rounded-lg border border-gray-300 px-4 py-3"
+              />
 
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="First name"
-                  />
-                </div>
+              <input
+                name="lastName"
+                required
+                value={form.lastName}
+                onChange={handleChange}
+                placeholder="Last name"
+                className="rounded-lg border border-gray-300 px-4 py-3"
+              />
 
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    Last Name
-                  </label>
+              <input
+                name="email"
+                type="email"
+                required
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email"
+                className="rounded-lg border border-gray-300 px-4 py-3"
+              />
 
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="Last name"
-                  />
-                </div>
+              <input
+                name="phone"
+                type="tel"
+                required
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="Phone"
+                className="rounded-lg border border-gray-300 px-4 py-3"
+              />
 
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    Email
-                  </label>
+              <input
+                name="address"
+                required
+                value={form.address}
+                onChange={handleChange}
+                placeholder="Address"
+                className="sm:col-span-2 rounded-lg border border-gray-300 px-4 py-3"
+              />
 
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="you@example.com"
-                  />
-                </div>
+              <input
+                name="city"
+                required
+                value={form.city}
+                onChange={handleChange}
+                placeholder="City"
+                className="rounded-lg border border-gray-300 px-4 py-3"
+              />
 
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    Phone
-                  </label>
+              <input
+                name="state"
+                required
+                value={form.state}
+                onChange={handleChange}
+                placeholder="State"
+                className="rounded-lg border border-gray-300 px-4 py-3"
+              />
 
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="Phone number"
-                  />
-                </div>
+              <input
+                name="postcode"
+                required
+                value={form.postcode}
+                onChange={handleChange}
+                placeholder="PIN code"
+                className="rounded-lg border border-gray-300 px-4 py-3"
+              />
+            </div>
 
-                <div className="sm:col-span-2">
-                  <label
-                    htmlFor="address"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    Address
-                  </label>
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-8 w-full rounded-lg bg-black px-6 py-3 font-semibold text-white hover:bg-gray-800 disabled:opacity-60"
+            >
+              {loading
+                ? "Placing Order..."
+                : "Place Order"}
+            </button>
+          </form>
 
-                  <input
-                    id="address"
-                    name="address"
-                    type="text"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="Street address"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="city"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    City
-                  </label>
-
-                  <input
-                    id="city"
-                    name="city"
-                    type="text"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="City"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="state"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    State
-                  </label>
-
-                  <input
-                    id="state"
-                    name="state"
-                    type="text"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="State"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="postcode"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    PIN Code
-                  </label>
-
-                  <input
-                    id="postcode"
-                    name="postcode"
-                    type="text"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-                    placeholder="PIN code"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="country"
-                    className="mb-2 block text-sm font-medium text-gray-700"
-                  >
-                    Country
-                  </label>
-
-                  <input
-                    id="country"
-                    name="country"
-                    type="text"
-                    value="India"
-                    readOnly
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-600 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-8 border-t border-gray-200 pt-6">
-                <h2 className="text-xl font-bold text-gray-900">
-                  Payment
-                </h2>
-
-                <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                  <p className="font-medium text-gray-900">
-                    Payment integration coming next
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-600">
-                    WooCommerce payment processing will be connected
-                    after the checkout form is complete.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                disabled
-                className="mt-8 w-full cursor-not-allowed rounded-lg bg-gray-300 px-6 py-3 font-semibold text-gray-500"
-              >
-                Place Order — Coming Soon
-              </button>
-            </form>
-          </section>
-
-          {/* Order Summary */}
           <aside className="h-fit rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl font-bold">
               Order Summary
             </h2>
 
-            <div className="mt-6 space-y-5">
-              {cartItems.map((item) => {
-                const price =
-                  Number(item.prices?.price || 0) / 100;
+            <div className="mt-6 space-y-4">
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between gap-4 text-sm"
+                >
+                  <span>
+                    {item.name} × {item.quantity}
+                  </span>
 
-                const itemSubtotal =
-                  price * item.quantity;
-
-                return (
-                  <div
-                    key={item.id}
-                    className="flex gap-4"
-                  >
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                      {item.images?.length > 0 ? (
-                        <img
-                          src={item.images[0].src}
-                          alt={
-                            item.images[0].alt ||
-                            item.name
-                          }
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-gray-400">
-                          No image
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-medium text-gray-900">
-                        {item.name}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-gray-500">
-                        Qty: {item.quantity}
-                      </p>
-                    </div>
-
-                    <p className="font-medium text-gray-900">
-                      {currencySymbol}
-                      {itemSubtotal.toFixed(2)}
-                    </p>
-                  </div>
-                );
-              })}
+                  <span>
+                    ₹
+                    {(
+                      (Number(
+                        item.prices?.price || 0
+                      ) /
+                        100) *
+                      item.quantity
+                    ).toFixed(2)}
+                  </span>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-6 border-t border-gray-200 pt-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600">
-                  Subtotal
-                </span>
+            <div className="my-6 border-t border-gray-200" />
 
-                <span className="font-medium text-gray-900">
-                  {currencySymbol}
-                  {cartTotal.toFixed(2)}
-                </span>
-              </div>
-
-              <div className="mt-4 flex justify-between">
-                <span className="text-lg font-bold text-gray-900">
-                  Total
-                </span>
-
-                <span className="text-lg font-bold text-gray-900">
-                  {currencySymbol}
-                  {cartTotal.toFixed(2)}
-                </span>
-              </div>
+            <div className="flex justify-between text-lg font-bold">
+              <span>Total</span>
+              <span>₹{cartTotal.toFixed(2)}</span>
             </div>
-
-            <Link
-              to="/cart"
-              className="mt-6 block text-center text-sm font-medium text-gray-600 transition hover:text-black"
-            >
-              ← Back to Cart
-            </Link>
           </aside>
         </div>
       </div>

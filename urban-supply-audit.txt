@@ -1,0 +1,292 @@
+================ PROJECT ================
+/home/shivam/Coding/React/urban-supply-frontend
+
+================ FILE TREE ================
+src/api/auth.js
+src/api/cart.js
+src/api/customers.js
+src/api/http.js
+src/api/orders.js
+src/api/products.js
+src/api/woocommerce.js
+src/App.css
+src/App.jsx
+src/assets/hero.png
+src/assets/react.svg
+src/assets/vite.svg
+src/components/EmptyState.jsx
+src/components/ErrorMessage.jsx
+src/components/Footer.jsx
+src/components/Loading.jsx
+src/components/Navbar.jsx
+src/components/ProductCard.jsx
+src/components/ProtectedRoute.jsx
+src/constants/api.js
+src/constants/routes.js
+src/context/AuthContext.jsx
+src/context/CartContext.jsx
+src/hooks/useAuth.js
+src/hooks/useCart.js
+src/hooks/useProducts.js
+src/index.css
+src/layouts/AuthLayout.jsx
+src/layouts/MainLayout.jsx
+src/lib/storage.js
+src/lib/validators.js
+src/lib/wordpress.js
+src/main.jsx
+src/pages/Account.jsx
+src/pages/Cart.jsx
+src/pages/Checkout.jsx
+src/pages/ForgotPassword.jsx
+src/pages/Home.jsx
+src/pages/Login.jsx
+src/pages/NotFound.jsx
+src/pages/OrderSuccess.jsx
+src/pages/ProductDetails.jsx
+src/pages/Register.jsx
+src/pages/ResetPassword.jsx
+src/pages/Stores.jsx
+src/routes/AppRoutes.jsx
+src/services/cartService.js
+src/services/customerService.js
+src/services/orderService.js
+src/services/productService.js
+src/utils/formatCurrency.js
+src/utils/formatDate.js
+src/utils/slugify.js
+
+================ PACKAGE.JSON ================
+{
+  "name": "urban-supply-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.3",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "eslint": "^10.9.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "globals": "^17.11.0",
+    "vite": "^8.2.2"
+  }
+}
+
+================ ALL IMPORTS ================
+src/context/CartContext.jsx:1:import {
+src/context/AuthContext.jsx:1:import {
+src/context/AuthContext.jsx:7:import { AuthContext } from "./AuthContext";
+src/context/AuthContext.jsx:9:import {
+src/App.jsx:1:import { BrowserRouter, Routes, Route } from "react-router-dom";
+src/App.jsx:3:import Login from "./pages/Login";
+src/App.jsx:4:import Register from "./pages/Register";
+src/App.jsx:5:import ForgotPassword from "./pages/ForgotPassword";
+src/App.jsx:6:import ResetPassword from "./pages/ResetPassword";
+src/App.jsx:7:import ProtectedRoute from "./components/ProtectedRoute";
+src/App.jsx:9:import Checkout from "./pages/Checkout";
+src/App.jsx:10:import OrderSuccess from "./pages/OrderSuccess";
+src/App.jsx:11:import Account from "./pages/Account";
+src/App.jsx:12:import Home from "./pages/Home";
+src/App.jsx:13:import Stores from "./pages/Stores";
+src/App.jsx:14:import ProductDetails from "./pages/ProductDetails";
+src/App.jsx:15:import Cart from "./pages/Cart";
+src/hooks/useAuth.js:1:import { useContext } from "react";
+src/hooks/useAuth.js:2:import { AuthContext } from "../context/AuthContext.jsx";
+src/components/ProductCard.jsx:1:import { Link } from "react-router-dom";
+src/components/ProductCard.jsx:2:import { useCart } from "../context/CartContext";
+src/components/ProtectedRoute.jsx:1:import { Navigate, useLocation } from "react-router-dom";
+src/components/ProtectedRoute.jsx:2:import { useAuth } from "../context/useAuth.jsx";
+src/main.jsx:1:import React from "react";
+src/main.jsx:2:import ReactDOM from "react-dom/client";
+src/main.jsx:3:import App from "./App.jsx";
+src/main.jsx:4:import "./index.css";
+src/main.jsx:5:import { CartProvider } from "./context/CartContext.jsx";
+src/main.jsx:6:import { AuthProvider } from "./context/AuthContext.jsx";
+src/pages/Cart.jsx:1:import { Link } from "react-router-dom";
+src/pages/Cart.jsx:2:import { useCart } from "../context/useCart";
+src/pages/ResetPassword.jsx:1:import { useState } from "react";
+src/pages/ResetPassword.jsx:2:import {
+src/pages/ResetPassword.jsx:8:import { resetPassword } from "../api/auth";
+src/pages/Login.jsx:1:import { useState } from "react";
+src/pages/Login.jsx:2:import { Link, useLocation, useNavigate } from "react-router-dom";
+src/pages/Login.jsx:4:import { useAuth } from "../hooks/useAuth";
+src/pages/OrderSuccess.jsx:1:import { Link, useParams } from "react-router-dom";
+src/pages/Stores.jsx:1:import { useEffect, useState } from "react";
+src/pages/Stores.jsx:2:import { getProducts } from "../api/products";
+src/pages/Stores.jsx:3:import ProductCard from "../components/ProductCard";
+src/pages/ForgotPassword.jsx:1:import { useState } from "react";
+src/pages/ForgotPassword.jsx:2:import { Link } from "react-router-dom";
+src/pages/ForgotPassword.jsx:4:import { forgotPassword } from "../api/auth";
+src/pages/Account.jsx:1:import { Link, useNavigate } from "react-router-dom";
+src/pages/Account.jsx:2:import { useAuth } from "../hooks/useAuth";
+src/pages/Checkout.jsx:1:import { useState } from "react";
+src/pages/Checkout.jsx:2:import { Link, useNavigate } from "react-router-dom";
+src/pages/Checkout.jsx:3:import { useCart } from "../context/useCart";
+src/pages/Checkout.jsx:4:import { useAuth } from "../context/useAuth";
+src/pages/ProductDetails.jsx:1:import { useEffect, useState } from "react";
+src/pages/ProductDetails.jsx:2:import { Link, useParams } from "react-router-dom";
+src/pages/ProductDetails.jsx:3:import { getProduct } from "../api/products";
+src/pages/ProductDetails.jsx:4:import { useCart } from "../context/CartContext";
+src/pages/Register.jsx:1:import { useState } from "react";
+src/pages/Register.jsx:2:import { Link, useNavigate } from "react-router-dom";
+src/pages/Register.jsx:4:import {
+
+================ OLD AUTH/CART IMPORTS ================
+src/hooks/useAuth.js:2:import { AuthContext } from "../context/AuthContext.jsx";
+src/components/ProtectedRoute.jsx:2:import { useAuth } from "../context/useAuth.jsx";
+src/main.jsx:6:import { AuthProvider } from "./context/AuthContext.jsx";
+src/pages/Cart.jsx:2:import { useCart } from "../context/useCart";
+src/pages/Checkout.jsx:3:import { useCart } from "../context/useCart";
+src/pages/Checkout.jsx:4:import { useAuth } from "../context/useAuth";
+
+================ AUTH PROVIDERS ================
+src/context/CartContext.jsx:11:export function CartProvider({ children }) {
+src/context/AuthContext.jsx:15:export function AuthProvider({ children }) {
+src/main.jsx:5:import { CartProvider } from "./context/CartContext.jsx";
+src/main.jsx:6:import { AuthProvider } from "./context/AuthContext.jsx";
+src/main.jsx:10:    <AuthProvider>
+src/main.jsx:11:      <CartProvider>
+src/main.jsx:13:      </CartProvider>
+src/main.jsx:14:    </AuthProvider>
+
+================ ROUTES ================
+20:      <Routes>
+21:        <Route
+22:          path="/"
+26:        <Route
+27:          path="/stores"
+31:        <Route
+32:          path="/products/:id"
+36:        <Route
+37:          path="/login"
+41:        <Route
+42:          path="/register"
+46:        <Route
+47:          path="/forgot-password"
+51:        <Route
+52:          path="/reset-password"
+56:        <Route
+57:          path="/cart"
+65:        <Route
+66:          path="/checkout"
+74:        <Route
+75:          path="/order-success/:orderId"
+83:        <Route
+84:          path="/account"
+
+================ PAGE IMPORTS ================
+3:import Login from "./pages/Login";
+4:import Register from "./pages/Register";
+5:import ForgotPassword from "./pages/ForgotPassword";
+6:import ResetPassword from "./pages/ResetPassword";
+9:import Checkout from "./pages/Checkout";
+10:import OrderSuccess from "./pages/OrderSuccess";
+11:import Account from "./pages/Account";
+12:import Home from "./pages/Home";
+13:import Stores from "./pages/Stores";
+14:import ProductDetails from "./pages/ProductDetails";
+15:import Cart from "./pages/Cart";
+
+================ COMPONENT IMPORTS ================
+7:import ProtectedRoute from "./components/ProtectedRoute";
+
+================ HOOK FILES ================
+src/context/AuthContext.jsx
+src/context/CartContext.jsx
+src/hooks/useAuth.js
+src/hooks/useCart.js
+src/hooks/useProducts.js
+
+================ VITE CHECK ================
+npm notice run urban-supply-frontend@0.0.0 build
+npm notice run vite build
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 42 modules transformed.
+✗ Build failed in 196ms
+error during build:
+Build failed with 4 errors:
+
+[31m[UNRESOLVED_IMPORT] [0mCould not resolve '../context/useCart' in src/pages/Cart.jsx
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Cart.jsx:2:25 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m2 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m{[0m[38;5;249m [0m[38;5;249mu[0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mC[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m"../context/useCart"[38;5;249m;[0m
+ [38;5;240m  │[0m                         ──────────┬─────────  
+ [38;5;240m  │[0m                                   ╰─────────── Module not found.
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: 'src/pages/Cart.jsx' is imported by the following path:
+ [38;5;240m  │[0m         - src/pages/Cart.jsx
+ [38;5;240m  │[0m         - src/App.jsx
+ [38;5;240m  │[0m         - src/main.jsx
+ [38;5;240m  │[0m         - index.html
+[38;5;246m───╯[0m
+
+[31m[UNRESOLVED_IMPORT] [0mCould not resolve '../context/useAuth.jsx' in src/components/ProtectedRoute.jsx
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/ProtectedRoute.jsx:2:25 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m2 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m{[0m[38;5;249m [0m[38;5;249mu[0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mA[0m[38;5;249mu[0m[38;5;249mt[0m[38;5;249mh[0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m"../context/useAuth.jsx"[38;5;249m;[0m
+ [38;5;240m  │[0m                         ────────────┬───────────  
+ [38;5;240m  │[0m                                     ╰───────────── Module not found.
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: 'src/components/ProtectedRoute.jsx' is imported by the following path:
+ [38;5;240m  │[0m         - src/components/ProtectedRoute.jsx
+ [38;5;240m  │[0m         - src/App.jsx
+ [38;5;240m  │[0m         - src/main.jsx
+ [38;5;240m  │[0m         - index.html
+[38;5;246m───╯[0m
+
+[31m[UNRESOLVED_IMPORT] [0mCould not resolve '../context/useCart' in src/pages/Checkout.jsx
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Checkout.jsx:3:25 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m3 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m{[0m[38;5;249m [0m[38;5;249mu[0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mC[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m"../context/useCart"[38;5;249m;[0m
+ [38;5;240m  │[0m                         ──────────┬─────────  
+ [38;5;240m  │[0m                                   ╰─────────── Module not found.
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: 'src/pages/Checkout.jsx' is imported by the following path:
+ [38;5;240m  │[0m         - src/pages/Checkout.jsx
+ [38;5;240m  │[0m         - src/App.jsx
+ [38;5;240m  │[0m         - src/main.jsx
+ [38;5;240m  │[0m         - index.html
+[38;5;246m───╯[0m
+
+[31m[UNRESOLVED_IMPORT] [0mCould not resolve '../context/useAuth' in src/pages/Checkout.jsx
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/pages/Checkout.jsx:4:25 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m4 │[0m [38;5;249mi[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m{[0m[38;5;249m [0m[38;5;249mu[0m[38;5;249ms[0m[38;5;249me[0m[38;5;249mA[0m[38;5;249mu[0m[38;5;249mt[0m[38;5;249mh[0m[38;5;249m [0m[38;5;249m}[0m[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m"../context/useAuth"[38;5;249m;[0m
+ [38;5;240m  │[0m                         ──────────┬─────────  
+ [38;5;240m  │[0m                                   ╰─────────── Module not found.
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: 'src/pages/Checkout.jsx' is imported by the following path:
+ [38;5;240m  │[0m         - src/pages/Checkout.jsx
+ [38;5;240m  │[0m         - src/App.jsx
+ [38;5;240m  │[0m         - src/main.jsx
+ [38;5;240m  │[0m         - index.html
+[38;5;246m───╯[0m
+
+    at aggregateBindingErrorsIntoJsError (file:///home/shivam/Coding/React/urban-supply-frontend/node_modules/rolldown/dist/shared/error-BP8lJHle.mjs:48:18)
+    at unwrapBindingResult (file:///home/shivam/Coding/React/urban-supply-frontend/node_modules/rolldown/dist/shared/error-BP8lJHle.mjs:18:128)
+    at #build (file:///home/shivam/Coding/React/urban-supply-frontend/node_modules/rolldown/dist/shared/rolldown-DfXO5K1m.mjs:133:34)
+    at async buildEnvironment (file:///home/shivam/Coding/React/urban-supply-frontend/node_modules/vite/dist/node/chunks/node.js:33821:66)
+    at async Object.build (file:///home/shivam/Coding/React/urban-supply-frontend/node_modules/vite/dist/node/chunks/node.js:34242:19)
+    at async Object.buildApp (file:///home/shivam/Coding/React/urban-supply-frontend/node_modules/vite/dist/node/chunks/node.js:34239:153)
+    at async CAC.<anonymous> (file:///home/shivam/Coding/React/urban-supply-frontend/node_modules/vite/dist/node/cli.js:776:3) {
+  errors: [Getter/Setter]
+}
+
+================ AUDIT COMPLETE ================

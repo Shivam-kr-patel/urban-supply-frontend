@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getProduct } from "../api/products";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 function ProductDetails() {
   // Get the product ID from the URL.
 

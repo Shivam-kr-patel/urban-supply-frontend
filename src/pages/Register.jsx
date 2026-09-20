@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 
-const WORDPRESS_URL = "http://localhost/urban-supply";
+import {
+  checkUsername,
+  registerUser,
+} from "../api/auth";
+
+import { AuthContext } from "../context/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
-  const { checkAuth } = useAuth();
 
-  const [formData, setFormData] = useState({
+  const { checkAuth } = useContext(AuthContext);
+
+  const [form, setForm] = useState({
     username: "",
     firstName: "",
     lastName: "",
@@ -18,134 +23,68 @@ function Register() {
     confirmPassword: "",
   });
 
-  const [usernameStatus, setUsernameStatus] = useState("");
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setFormData((previous) => ({
-      ...previous,
+    setForm((current) => ({
+      ...current,
       [name]: value,
     }));
-
-    if (name === "username") {
-      setUsernameStatus("");
-    }
-  };
-
-  const checkUsername = async () => {
-    const username = formData.username.trim();
-
-    if (!username) {
-      setUsernameStatus("");
-      return;
-    }
-
-    if (username.length < 3) {
-      setUsernameStatus("Username must be at least 3 characters.");
-      return;
-    }
-
-    try {
-      const form = new URLSearchParams();
-      form.append("action", "urban_supply_check_username");
-      form.append("username", username);
-
-      const response = await fetch(
-        `${WORDPRESS_URL}/wp-admin/admin-ajax.php`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: form.toString(),
-        }
-      );
-      console.log("Registration HTTP status:", response.status);
-      console.log("Registration response:", await response.clone().text());
-      const result = await response.json();
-
-      if (result.success) {
-        setUsernameStatus(result.data.message);
-      } else {
-        setUsernameStatus(
-          result.data?.message || "Unable to check username."
-        );
-      }
-    } catch (error) {
-      console.error("Username check failed:", error);
-      setUsernameStatus("Unable to check username.");
-    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     setError("");
-    setMessage("");
 
-    if (formData.password !== formData.confirmPassword) {
+    if (form.password !== form.confirmPassword) {
       setError("Passwords do not match.");
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters.");
       return;
     }
 
     setLoading(true);
 
     try {
-      const form = new URLSearchParams();
+      const usernameResult =
+        await checkUsername(form.username);
 
-      form.append("action", "urban_supply_register");
-      form.append("username", formData.username.trim());
-      form.append("first_name", formData.firstName.trim());
-      form.append("last_name", formData.lastName.trim());
-      form.append("email", formData.email.trim());
-      form.append("phone", formData.phone.trim());
-      form.append("password", formData.password);
-      form.append("confirm_password", formData.confirmPassword);
-
-      const response = await fetch(
-        `${WORDPRESS_URL}/wp-admin/admin-ajax.php`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: form.toString(),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!result.success) {
-        setError(
-          result.data?.message ||
-            "Registration failed. Please try again."
+      if (!usernameResult.available) {
+        throw new Error(
+          usernameResult.message ||
+            "Username is not available."
         );
-        return;
       }
 
-      setMessage(
-        result.data?.message ||
-          "Account created successfully."
-      );
+      await registerUser({
+        username: form.username,
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+        confirm_password: form.confirmPassword,
+      });
 
+      /*
+       * Refresh authentication state.
+       *
+       * If registration also creates the WordPress
+       * login session, this will immediately update
+       * the Header from Login/Sign Up to the Account icon.
+       */
       await checkAuth();
 
-      navigate("/account");
+      navigate("/");
     } catch (error) {
-      console.error("Registration failed:", error);
       setError(
-        "Something went wrong. Please try again."
+        error.message ||
+          "Unable to create your account."
       );
     } finally {
       setLoading(false);
@@ -153,42 +92,58 @@ function Register() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-md">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+    <main className="bg-gray-50 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <div className="mx-auto w-full max-w-lg">
 
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Create Account
-            </h1>
+        {/* Heading */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            Create Account
+          </h1>
 
-            <p className="mt-2 text-sm text-gray-600">
-              Create your Urban Supply account
-            </p>
-          </div>
+          <p className="mt-3 text-sm text-gray-600 sm:text-base">
+            Join Urban Supply and start shopping today.
+          </p>
+        </div>
 
+        {/* Form Card */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
+
+          {/* Error */}
           {error && (
-            <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+            <div
+              role="alert"
+              className="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="mt-0.5 h-5 w-5 shrink-0"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m0 3.75h.007M10.29 3.86l-7.12 12.3A1.5 1.5 0 004.47 18.4h15.06a1.5 1.5 0 001.3-2.24l-7.12-12.3a1.5 1.5 0 00-2.6 0z"
+                />
+              </svg>
 
-          {message && (
-            <div className="mt-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              {message}
+              <span>{error}</span>
             </div>
           )}
 
           <form
             onSubmit={handleSubmit}
-            className="mt-8 space-y-5"
+            className="space-y-5"
           >
 
             {/* Username */}
             <div>
               <label
                 htmlFor="username"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className="mb-2 block text-sm font-semibold text-gray-800"
               >
                 Username
               </label>
@@ -199,25 +154,12 @@ function Register() {
                 type="text"
                 required
                 minLength={3}
+                value={form.username}
+                onChange={handleChange}
                 autoComplete="username"
                 placeholder="Choose a username"
-                value={formData.username}
-                onChange={handleChange}
-                onBlur={checkUsername}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
+                className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
               />
-
-              {usernameStatus && (
-                <p
-                  className={`mt-2 text-sm ${
-                    usernameStatus.toLowerCase().includes("available")
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {usernameStatus}
-                </p>
-              )}
             </div>
 
             {/* First + Last Name */}
@@ -226,7 +168,7 @@ function Register() {
               <div>
                 <label
                   htmlFor="firstName"
-                  className="mb-2 block text-sm font-medium text-gray-700"
+                  className="mb-2 block text-sm font-semibold text-gray-800"
                 >
                   First Name
                 </label>
@@ -236,18 +178,18 @@ function Register() {
                   name="firstName"
                   type="text"
                   required
+                  value={form.firstName}
+                  onChange={handleChange}
                   autoComplete="given-name"
                   placeholder="First name"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
+                  className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="lastName"
-                  className="mb-2 block text-sm font-medium text-gray-700"
+                  className="mb-2 block text-sm font-semibold text-gray-800"
                 >
                   Last Name
                 </label>
@@ -257,11 +199,11 @@ function Register() {
                   name="lastName"
                   type="text"
                   required
+                  value={form.lastName}
+                  onChange={handleChange}
                   autoComplete="family-name"
                   placeholder="Last name"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
+                  className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
                 />
               </div>
 
@@ -271,7 +213,7 @@ function Register() {
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className="mb-2 block text-sm font-semibold text-gray-800"
               >
                 Email Address
               </label>
@@ -281,11 +223,11 @@ function Register() {
                 name="email"
                 type="email"
                 required
+                value={form.email}
+                onChange={handleChange}
                 autoComplete="email"
                 placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
+                className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
               />
             </div>
 
@@ -293,7 +235,7 @@ function Register() {
             <div>
               <label
                 htmlFor="phone"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className="mb-2 block text-sm font-semibold text-gray-800"
               >
                 Phone Number
               </label>
@@ -303,11 +245,11 @@ function Register() {
                 name="phone"
                 type="tel"
                 required
+                value={form.phone}
+                onChange={handleChange}
                 autoComplete="tel"
                 placeholder="Phone number"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
+                className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
               />
             </div>
 
@@ -315,59 +257,186 @@ function Register() {
             <div>
               <label
                 htmlFor="password"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className="mb-2 block text-sm font-semibold text-gray-800"
               >
                 Password
               </label>
 
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                minLength={8}
-                autoComplete="new-password"
-                placeholder="At least 8 characters"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  required
+                  minLength={8}
+                  value={form.password}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(
+                      (current) => !current
+                    )
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                >
+                  {showPassword ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.8"
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.98 8.223A10.477 10.477 0 001.5 12c2.5 4.5 6.5 6.75 10.5 6.75 1.81 0 3.55-.46 5.1-1.3M6.228 6.228A10.45 10.45 0 0112 5.25c4 0 8 2.25 10.5 6.75a11.1 11.1 0 01-2.36 3.2M6.228 6.228L3 3m3.228 3.228L9.88 9.88m4.24 4.24L21 21m-6.88-6.88a3 3 0 01-4.24-4.24"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.8"
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12s-3.75 6.75-9.75 6.75S2.25 12 2.25 12z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              <p className="mt-2 text-xs text-gray-500">
+                Use at least 8 characters.
+              </p>
             </div>
 
             {/* Confirm Password */}
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="mb-2 block text-sm font-medium text-gray-700"
+                className="mb-2 block text-sm font-semibold text-gray-800"
               >
                 Confirm Password
               </label>
 
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                minLength={8}
-                autoComplete="new-password"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-black"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={
+                    showConfirmPassword
+                      ? "text"
+                      : "password"
+                  }
+                  required
+                  minLength={8}
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  placeholder="Confirm your password"
+                  className="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowConfirmPassword(
+                      (current) => !current
+                    )
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900"
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirm password"
+                      : "Show confirm password"
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.8"
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.98 8.223A10.477 10.477 0 001.5 12c2.5 4.5 6.5 6.75 10.5 6.75 1.81 0 3.55-.46 5.1-1.3M6.228 6.228A10.45 10.45 0 0112 5.25c4 0 8 2.25 10.5 6.75a11.1 11.1 0 01-2.36 3.2M6.228 6.228L3 3m3.228 3.228L9.88 9.88m4.24 4.24L21 21m-6.88-6.88a3 3 0 01-4.24-4.24"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.8"
+                      stroke="currentColor"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12s-3.75 6.75-9.75 6.75S2.25 12 2.25 12z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Terms */}
-            <label className="flex items-start gap-3 text-sm text-gray-600">
+            <label className="flex cursor-pointer items-start gap-3 pt-1 text-sm text-gray-600">
               <input
                 type="checkbox"
                 required
-                className="mt-1 h-4 w-4 rounded border-gray-300"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-black focus:ring-2 focus:ring-gray-900"
               />
 
-              <span>
-                I agree to the Terms & Conditions and Privacy
-                Policy.
+              <span className="leading-6">
+                I agree to the{" "}
+                <span className="font-medium text-gray-900">
+                  Terms & Conditions
+                </span>{" "}
+                and{" "}
+                <span className="font-medium text-gray-900">
+                  Privacy Policy
+                </span>
+                .
               </span>
             </label>
 
@@ -375,23 +444,49 @@ function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-black px-6 py-3 font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center rounded-xl bg-gray-900 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading
-                ? "Creating Account..."
-                : "Create Account"}
-            </button>
+              {loading ? (
+                <>
+                  <svg
+                    className="mr-2 h-5 w-5 animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
 
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    />
+                  </svg>
+
+                  Creating Account...
+                </>
+              ) : (
+                "Create Account"
+              )}
+            </button>
           </form>
 
-          <div className="mt-6 border-t border-gray-200 pt-6 text-center">
+          {/* Login */}
+          <div className="mt-7 border-t border-gray-200 pt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?
             </p>
 
             <Link
               to="/login"
-              className="mt-1 inline-block text-sm font-semibold text-black hover:underline"
+              className="mt-1 inline-block text-sm font-semibold text-gray-900 hover:underline"
             >
               Login
             </Link>
